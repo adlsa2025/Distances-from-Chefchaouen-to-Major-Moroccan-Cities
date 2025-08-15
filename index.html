@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chefchaouen Distance Comparison Chart (Horizontal)</title>
+<title>Chefchaouen Distance Comparison Chart (Sortable)</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body {
@@ -17,50 +17,50 @@
     border-radius: 8px;
     padding: 10px;
   }
+  select {
+    margin-bottom: 15px;
+    padding: 5px;
+    font-size: 14px;
+  }
 </style>
 </head>
 <body>
 
 <h2>Chefchaouen Distances: Driving vs Direct</h2>
+<label for="sortSelect">Sort by:</label>
+<select id="sortSelect">
+  <option value="original">Original Order</option>
+  <option value="closest">Closest First</option>
+  <option value="farthest">Farthest First</option>
+</select>
+
 <canvas id="distanceChart"></canvas>
 
 <script>
+const cityData = [
+  { city: 'Tétouan', driving: 39.24, direct: 28.91 },
+  { city: 'Tangier', driving: 67.72, direct: 51.19 },
+  { city: 'Fès', driving: 121.88, direct: 79.88 },
+  { city: 'Meknès', driving: 118.75, direct: 89.58 },
+  { city: 'Rabat', driving: 153.44, direct: 119.74 },
+  { city: 'Casablanca', driving: 212.46, direct: 172.76 },
+  { city: 'Marrakech', driving: 358.56, direct: 290.75 },
+  { city: 'Essaouira', driving: 436.03, direct: 362.52 },
+  { city: 'Agadir', driving: 482.07, direct: 395.11 },
+  { city: 'Oujda', driving: 294.11, direct: 192.15 },
+  { city: 'Ouarzazate', driving: 479.49, direct: 308.42 },
+  { city: 'Laayoune', driving: 964.56, direct: 724.86 },
+  { city: 'Dakhla', driving: 1295.58, direct: 1018.34 }
+];
+
+let originalOrder = [...cityData];
+
 const ctx = document.getElementById('distanceChart').getContext('2d');
-const distanceChart = new Chart(ctx, {
+let distanceChart = new Chart(ctx, {
     type: 'bar',
-    data: {
-        labels: [
-            'Tétouan', 'Tangier', 'Fès', 'Meknès', 
-            'Rabat', 'Casablanca', 'Marrakech', 'Essaouira', 
-            'Agadir', 'Oujda', 'Ouarzazate', 'Laayoune', 'Dakhla'
-        ],
-        datasets: [
-            {
-                label: 'Driving Distance (miles)',
-                data: [
-                    39.24, 67.72, 121.88, 118.75, 
-                    153.44, 212.46, 358.56, 436.03, 
-                    482.07, 294.11, 479.49, 964.56, 1295.58
-                ],
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            },
-            {
-                label: 'Direct Distance (miles)',
-                data: [
-                    28.91, 51.19, 79.88, 89.58, 
-                    119.74, 172.76, 290.75, 362.52, 
-                    395.11, 192.15, 308.42, 724.86, 1018.34
-                ],
-                backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
-            }
-        ]
-    },
+    data: getChartData(cityData),
     options: {
-        indexAxis: 'y', // Makes the chart horizontal
+        indexAxis: 'y',
         responsive: true,
         plugins: {
             tooltip: {
@@ -81,6 +81,41 @@ const distanceChart = new Chart(ctx, {
             }
         }
     }
+});
+
+function getChartData(data) {
+    return {
+        labels: data.map(item => item.city),
+        datasets: [
+            {
+                label: 'Driving Distance (miles)',
+                data: data.map(item => item.driving),
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Direct Distance (miles)',
+                data: data.map(item => item.direct),
+                backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }
+        ]
+    };
+}
+
+document.getElementById('sortSelect').addEventListener('change', function() {
+    let sortedData = [...cityData];
+    if (this.value === 'closest') {
+        sortedData.sort((a, b) => a.driving - b.driving);
+    } else if (this.value === 'farthest') {
+        sortedData.sort((a, b) => b.driving - a.driving);
+    } else {
+        sortedData = [...originalOrder];
+    }
+    distanceChart.data = getChartData(sortedData);
+    distanceChart.update();
 });
 </script>
 
