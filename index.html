@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chefchaouen Distance Chart</title>
+<title>Chefchaouen Distance Comparison Chart (Horizontal)</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body {
@@ -21,7 +21,7 @@
 </head>
 <body>
 
-<h2>Driving Distances from Chefchaouen to Major Moroccan Cities</h2>
+<h2>Chefchaouen Distances: Driving vs Direct</h2>
 <canvas id="distanceChart"></canvas>
 
 <script>
@@ -34,32 +34,45 @@ const distanceChart = new Chart(ctx, {
             'Rabat', 'Casablanca', 'Marrakech', 'Essaouira', 
             'Agadir', 'Oujda', 'Ouarzazate', 'Laayoune', 'Dakhla'
         ],
-        datasets: [{
-            label: 'Driving Distance (miles)',
-            data: [
-                39.24, 67.72, 121.88, 118.75, 
-                153.44, 212.46, 358.56, 436.03, 
-                482.07, 294.11, 479.49, 964.56, 1295.58
-            ],
-            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
+        datasets: [
+            {
+                label: 'Driving Distance (miles)',
+                data: [
+                    39.24, 67.72, 121.88, 118.75, 
+                    153.44, 212.46, 358.56, 436.03, 
+                    482.07, 294.11, 479.49, 964.56, 1295.58
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Direct Distance (miles)',
+                data: [
+                    28.91, 51.19, 79.88, 89.58, 
+                    119.74, 172.76, 290.75, 362.52, 
+                    395.11, 192.15, 308.42, 724.86, 1018.34
+                ],
+                backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }
+        ]
     },
     options: {
+        indexAxis: 'y', // Makes the chart horizontal
         responsive: true,
         plugins: {
-            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
-                        return context.parsed.y + ' miles';
+                        return context.dataset.label + ': ' + context.parsed.x + ' miles';
                     }
                 }
             }
         },
         scales: {
-            y: {
+            x: {
                 beginAtZero: true,
                 title: {
                     display: true,
