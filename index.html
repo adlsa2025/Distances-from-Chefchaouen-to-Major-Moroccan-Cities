@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chefchaouen Distance Chart</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: auto;
+    padding: 10px;
+  }
+  canvas {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h2>Driving Distances from Chefchaouen to Major Moroccan Cities</h2>
+<canvas id="distanceChart"></canvas>
+
+<script>
+const ctx = document.getElementById('distanceChart').getContext('2d');
+const distanceChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+            'Tétouan', 'Tangier', 'Fès', 'Meknès', 
+            'Rabat', 'Casablanca', 'Marrakech', 'Essaouira', 
+            'Agadir', 'Oujda', 'Ouarzazate', 'Laayoune', 'Dakhla'
+        ],
+        datasets: [{
+            label: 'Driving Distance (miles)',
+            data: [
+                39.24, 67.72, 121.88, 118.75, 
+                153.44, 212.46, 358.56, 436.03, 
+                482.07, 294.11, 479.49, 964.56, 1295.58
+            ],
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.parsed.y + ' miles';
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Distance (miles)'
+                }
+            }
+        }
+    }
+});
+</script>
+
+</body>
+</html>
