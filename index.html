@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chefchaouen Distance Comparison Chart (Sortable)</title>
+<title>Chefchaouen Distance Comparison Chart (Responsive)</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body {
@@ -55,33 +55,14 @@ const cityData = [
 
 let originalOrder = [...cityData];
 
-const ctx = document.getElementById('distanceChart').getContext('2d');
-let distanceChart = new Chart(ctx, {
-    type: 'bar',
-    data: getChartData(cityData),
-    options: {
-        indexAxis: 'y',
-        responsive: true,
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.dataset.label + ': ' + context.parsed.x + ' miles';
-                    }
-                }
-            }
-        },
-        scales: {
-            x: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'Distance (miles)'
-                }
-            }
-        }
+function getBarSettings() {
+    // Adjusts bar thickness depending on screen size
+    if (window.innerWidth < 600) {
+        return { categoryPercentage: 0.8, barPercentage: 0.7 }; // Thinner bars for mobile
+    } else {
+        return { categoryPercentage: 0.9, barPercentage: 0.9 }; // Thicker bars for desktop
     }
-});
+}
 
 function getChartData(data) {
     return {
@@ -105,6 +86,43 @@ function getChartData(data) {
     };
 }
 
+let barSettings = getBarSettings();
+
+const ctx = document.getElementById('distanceChart').getContext('2d');
+let distanceChart = new Chart(ctx, {
+    type: 'bar',
+    data: getChartData(cityData),
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: 0 },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.dataset.label + ': ' + context.parsed.x + ' miles';
+                    }
+                }
+            },
+            legend: { position: 'top' }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Distance (miles)'
+                }
+            },
+            y: {
+                categoryPercentage: barSettings.categoryPercentage,
+                barPercentage: barSettings.barPercentage
+            }
+        }
+    }
+});
+
 document.getElementById('sortSelect').addEventListener('change', function() {
     let sortedData = [...cityData];
     if (this.value === 'closest') {
@@ -115,6 +133,14 @@ document.getElementById('sortSelect').addEventListener('change', function() {
         sortedData = [...originalOrder];
     }
     distanceChart.data = getChartData(sortedData);
+    distanceChart.update();
+});
+
+// Recalculate bar thickness when window is resized
+window.addEventListener('resize', () => {
+    barSettings = getBarSettings();
+    distanceChart.options.scales.y.categoryPercentage = barSettings.categoryPercentage;
+    distanceChart.options.scales.y.barPercentage = barSettings.barPercentage;
     distanceChart.update();
 });
 </script>
