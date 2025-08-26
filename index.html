@@ -1,149 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chefchaouen Distance Comparison Chart (Responsive)</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 900px;
-    margin: auto;
-    padding: 10px;
-  }
-  canvas {
-    background: #f9f9f9;
-    border-radius: 8px;
-    padding: 10px;
-  }
-  select {
-    margin-bottom: 15px;
-    padding: 5px;
-    font-size: 14px;
-  }
-</style>
-</head>
-<body>
-
-<h2>Chefchaouen Distances: Driving vs Direct</h2>
-<label for="sortSelect">Sort by:</label>
-<select id="sortSelect">
-  <option value="original">Original Order</option>
-  <option value="closest">Closest First</option>
-  <option value="farthest">Farthest First</option>
-</select>
-
-<canvas id="distanceChart"></canvas>
-
-<script>
-const cityData = [
-  { city: 'Tétouan', driving: 39.24, direct: 28.91 },
-  { city: 'Tangier', driving: 67.72, direct: 51.19 },
-  { city: 'Fès', driving: 121.88, direct: 79.88 },
-  { city: 'Meknès', driving: 118.75, direct: 89.58 },
-  { city: 'Rabat', driving: 153.44, direct: 119.74 },
-  { city: 'Casablanca', driving: 212.46, direct: 172.76 },
-  { city: 'Marrakech', driving: 358.56, direct: 290.75 },
-  { city: 'Essaouira', driving: 436.03, direct: 362.52 },
-  { city: 'Agadir', driving: 482.07, direct: 395.11 },
-  { city: 'Oujda', driving: 294.11, direct: 192.15 },
-  { city: 'Ouarzazate', driving: 479.49, direct: 308.42 },
-  { city: 'Laayoune', driving: 964.56, direct: 724.86 },
-  { city: 'Dakhla', driving: 1295.58, direct: 1018.34 }
-];
-
-let originalOrder = [...cityData];
-
-function getBarSettings() {
-    // Adjusts bar thickness depending on screen size
-    if (window.innerWidth < 600) {
-        return { categoryPercentage: 0.8, barPercentage: 0.7 }; // Thinner bars for mobile
-    } else {
-        return { categoryPercentage: 0.9, barPercentage: 0.9 }; // Thicker bars for desktop
-    }
-}
-
-function getChartData(data) {
-    return {
-        labels: data.map(item => item.city),
-        datasets: [
-            {
-                label: 'Driving Distance (miles)',
-                data: data.map(item => item.driving),
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            },
-            {
-                label: 'Direct Distance (miles)',
-                data: data.map(item => item.direct),
-                backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distances from Chefchaouen Bar Chart</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        .distance-chart-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 25px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .chart-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .chart-title {
+            color: #1565c0;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-subtitle {
+            color: #1976d2;
+            font-size: 16px;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .chart-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #42a5f5 0%, #2196f3 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .distance-chart-container {
+                margin: 10px;
+                padding: 15px;
             }
-        ]
-    };
-}
-
-let barSettings = getBarSettings();
-
-const ctx = document.getElementById('distanceChart').getContext('2d');
-let distanceChart = new Chart(ctx, {
-    type: 'bar',
-    data: getChartData(cityData),
-    options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: { padding: 0 },
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.dataset.label + ': ' + context.parsed.x + ' miles';
-                    }
-                }
-            },
-            legend: { position: 'top' }
-        },
-        scales: {
-            x: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'Distance (miles)'
-                }
-            },
-            y: {
-                categoryPercentage: barSettings.categoryPercentage,
-                barPercentage: barSettings.barPercentage
+            
+            .chart-title {
+                font-size: 22px;
+            }
+            
+            .chart-subtitle {
+                font-size: 14px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
-    }
-});
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="distance-chart-container">
+        <div class="chart-header">
+            <h2 class="chart-title">🏔️ Distances from Chefchaouen Blue City</h2>
+            <p class="chart-subtitle">Travel distances to major Moroccan cities</p>
+        </div>
+        
+        <div class="chart-wrapper">
+            <canvas id="distanceChart" width="400" height="300"></canvas>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-value">28.91 mi</span>
+                <div class="stat-label">Closest City (Tétouan)</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">1,295.58 mi</span>
+                <div class="stat-label">Farthest City (Dakhla)</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">14 Cities</span>
+                <div class="stat-label">Major Destinations</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">Northern Rif</span>
+                <div class="stat-label">Strategic Location</div>
+            </div>
+        </div>
+    </div>
 
-document.getElementById('sortSelect').addEventListener('change', function() {
-    let sortedData = [...cityData];
-    if (this.value === 'closest') {
-        sortedData.sort((a, b) => a.driving - b.driving);
-    } else if (this.value === 'farthest') {
-        sortedData.sort((a, b) => b.driving - a.driving);
-    } else {
-        sortedData = [...originalOrder];
-    }
-    distanceChart.data = getChartData(sortedData);
-    distanceChart.update();
-});
+    <script>
+        // Distance data for Chefchaouen to various Moroccan cities
+        const cities = [
+            'Tétouan', 'Tangier', 'Fès', 'Meknès', 'Rabat', 'Ifrane', 
+            'Casablanca', 'Oujda', 'Marrakech', 'Ouarzazate', 'Essaouira', 
+            'Agadir', 'Laayoune', 'Dakhla'
+        ];
+        
+        const directDistances = [29, 51, 80, 90, 120, 127, 173, 192, 291, 308, 363, 395, 725, 1018];
+        const drivingDistances = [39, 68, 122, 119, 153, 173, 212, 294, 359, 479, 436, 482, 965, 1296];
 
-// Recalculate bar thickness when window is resized
-window.addEventListener('resize', () => {
-    barSettings = getBarSettings();
-    distanceChart.options.scales.y.categoryPercentage = barSettings.categoryPercentage;
-    distanceChart.options.scales.y.barPercentage = barSettings.barPercentage;
-    distanceChart.update();
-});
-</script>
+        // Create the bar chart
+        const ctx = document.getElementById('distanceChart').getContext('2d');
+        
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: cities,
+                datasets: [{
+                    label: 'Direct Distance (miles)',
+                    data: directDistances,
+                    backgroundColor: 'rgba(46, 125, 50, 0.8)',
+                    borderColor: 'rgba(46, 125, 50, 1)',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }, {
+                    label: 'Driving Route (miles)',
+                    data: drivingDistances,
+                    backgroundColor: 'rgba(216, 67, 21, 0.8)',
+                    borderColor: 'rgba(216, 67, 21, 1)',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Distance Comparison: Direct vs Driving Routes',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        color: '#1565c0',
+                        padding: {
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        borderColor: '#2196f3',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + ' miles';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Moroccan Cities',
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            color: '#1565c0'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Distance (miles)',
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            color: '#1565c0'
+                        },
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                elements: {
+                    bar: {
+                        borderWidth: 2,
+                    }
+                }
+            }
+        });
 
+        // Set chart height
+        document.getElementById('distanceChart').style.height = '500px';
+        
+        // Add animation on load
+        chart.config.options.animation = {
+            duration: 2000,
+            easing: 'easeInOutQuart'
+        };
+    </script>
 </body>
 </html>
